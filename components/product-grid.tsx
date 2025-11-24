@@ -5,13 +5,25 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 interface ProductGridProps {
   products: Product[]
   onAddToCart: (product: Product) => void
+  isLoggedIn: boolean
 }
 
-export function ProductGrid({ products, onAddToCart }: ProductGridProps) {
+export function ProductGrid({ products, onAddToCart, isLoggedIn }: ProductGridProps) {
+  const router = useRouter()
+
+  const handleAddToCart = (product: Product) => {
+    if (!isLoggedIn) {
+      router.push("/login")
+      return
+    }
+    onAddToCart(product)
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {products.map((product) => (
@@ -36,7 +48,7 @@ export function ProductGrid({ products, onAddToCart }: ProductGridProps) {
           <CardFooter>
             <Button
               className="w-full add-to-cart-btn"
-              onClick={() => onAddToCart(product)}
+              onClick={() => handleAddToCart(product)}
               data-testid={`add-to-cart-${product.id}`}
             >
               Adicionar ao Carrinho

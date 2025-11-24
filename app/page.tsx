@@ -47,13 +47,25 @@ export default function Home() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [isSearching, setIsSearching] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true"
     const currentUser = localStorage.getItem("currentUser") || ""
+
+    if (!loggedIn) {
+      router.push("/login")
+      return
+    }
+
     setIsLoggedIn(loggedIn)
     setUsername(currentUser)
-  }, [])
+    setIsLoading(false)
+  }, [router])
+
+  if (isLoading) {
+    return null
+  }
 
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn")
@@ -61,6 +73,7 @@ export default function Home() {
     setIsLoggedIn(false)
     setUsername("")
     setCart([])
+    router.push("/login")
   }
 
   const handleSearchChange = (query: string) => {
@@ -84,6 +97,11 @@ export default function Home() {
       : PRODUCTS
 
   const addToCart = (product: Product) => {
+    if (!isLoggedIn) {
+      router.push("/login")
+      return
+    }
+
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id)
       if (existing) {
@@ -138,7 +156,7 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <ProductGrid products={filteredProducts} onAddToCart={addToCart} />
+          <ProductGrid products={filteredProducts} onAddToCart={addToCart} isLoggedIn={isLoggedIn} />
         )}
       </main>
 
