@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { ProductGrid } from "@/components/product-grid"
 import { CartModal } from "@/components/cart-modal"
+import { LimitWarningModal } from "@/components/limit-warning-modal"
 
 export type Product = {
   id: number
@@ -48,6 +49,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isSearching, setIsSearching] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [showLimitWarning, setShowLimitWarning] = useState(false)
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true"
@@ -121,6 +123,13 @@ export default function Home() {
     }
 
     setCart((prev) => {
+      const totalItems = prev.reduce((acc, item) => acc + item.quantity, 0)
+
+      if (totalItems >= 99) {
+        setShowLimitWarning(true)
+        return prev
+      }
+
       const existing = prev.find((item) => item.id === product.id)
       if (existing) {
         return prev.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item))
@@ -186,6 +195,8 @@ export default function Home() {
           onRemoveItem={removeFromCart}
         />
       )}
+
+      {showLimitWarning && <LimitWarningModal onClose={() => setShowLimitWarning(false)} />}
     </div>
   )
 }
