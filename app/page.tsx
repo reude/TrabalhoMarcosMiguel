@@ -52,6 +52,7 @@ export default function Home() {
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true"
     const currentUser = localStorage.getItem("currentUser") || ""
+    const savedCart = localStorage.getItem("cart")
 
     if (!loggedIn) {
       router.push("/login")
@@ -60,8 +61,24 @@ export default function Home() {
 
     setIsLoggedIn(loggedIn)
     setUsername(currentUser)
+
+    // Restore cart from localStorage
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart))
+      } catch (error) {
+        console.error("Error loading cart:", error)
+      }
+    }
+
     setIsLoading(false)
   }, [router])
+
+  useEffect(() => {
+    if (!isLoading && isLoggedIn) {
+      localStorage.setItem("cart", JSON.stringify(cart))
+    }
+  }, [cart, isLoading, isLoggedIn])
 
   if (isLoading) {
     return null
@@ -70,6 +87,7 @@ export default function Home() {
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn")
     localStorage.removeItem("currentUser")
+    localStorage.removeItem("cart")
     setIsLoggedIn(false)
     setUsername("")
     setCart([])
