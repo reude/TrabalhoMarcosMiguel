@@ -12,15 +12,14 @@ public class EcommerceLogic {
     private List<String> catalogoProdutos = List.of("Smartphone Pro X", "Laptop Ultra 15", "Fones Noise Cancel");
     public boolean usuarioLogado = false;
 
+    // --- CADASTRO E LOGIN ---
     public String cadastrarUsuario(String email, String senha, String confirmacaoSenha) {
         if (!senha.equals(confirmacaoSenha)) {
             throw new IllegalArgumentException("As senhas não coincidem");
         }
-
         if (bancoDeUsuarios.containsKey(email)) {
             throw new IllegalArgumentException("Este email já está cadastrado");
         }
-
         bancoDeUsuarios.put(email, senha);
         return "Cadastro realizado com sucesso";
     }
@@ -33,6 +32,7 @@ public class EcommerceLogic {
         throw new IllegalArgumentException("Email ou senha incorretos");
     }
 
+    // --- BUSCA E CARRINHO ---
     public String buscarProduto(String termo) {
         for (String produto : catalogoProdutos) {
             if (produto.toLowerCase().contains(termo.toLowerCase())) {
@@ -43,7 +43,15 @@ public class EcommerceLogic {
     }
 
     public void adicionarAoCarrinho(String item) {
-        if (!usuarioLogado) throw new IllegalStateException("Precisa estar logado");
+        if (!usuarioLogado) {
+            throw new IllegalStateException("Precisa estar logado");
+        }
+
+        // --- NOVA VALIDAÇÃO REAL NO CARRINHO ---
+        if (carrinho.size() >= 99) {
+            throw new IllegalStateException("Carrinho cheio! O limite é de 99 itens.");
+        }
+
         carrinho.add(item);
     }
 
@@ -55,7 +63,13 @@ public class EcommerceLogic {
         return carrinho.size();
     }
 
-    public void limparCarrinho() {
-        carrinho.clear();
+    // --- ITEM 8: ANÁLISE DE VALOR LIMITE (TEÓRICO E PRÁTICO) ---
+    // Regra: Limite de 99 (alterado conforme solicitado)
+    public String validarLimiteCompra(int quantidade) {
+        if (quantidade <= 99) {
+            return "Quantidade Válida";
+        } else {
+            return "Erro: Excede o limite de estoque";
+        }
     }
 }
