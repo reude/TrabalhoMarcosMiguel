@@ -1,11 +1,11 @@
-describe('Sistema E-commerce - Fluxos Críticos', () => {
+describe('Testes ElectroShop', () => {
   const BASE_URL = 'http://localhost:3000';
 
   beforeEach(() => {
     cy.clearLocalStorage();
   });
 
-  it('CT-01: Cadastro de Usuário com Sucesso', () => {
+  it('Cadastro de Usuário com Sucesso', () => {
     cy.visit(`${BASE_URL}/cadastro`);
     cy.get('#signup-email').type('aluno@teste.com');
     cy.get('#signup-password').type('Senha123');
@@ -14,7 +14,7 @@ describe('Sistema E-commerce - Fluxos Críticos', () => {
     cy.url().should('include', '/login');
   });
 
-  it('CT-02: Validação de Senhas Diferentes', () => {
+  it('Validação de Senhas Diferentes', () => {
     cy.visit(`${BASE_URL}/cadastro`);
     cy.get('#signup-email').type('erro@teste.com');
     cy.get('#signup-password').type('123');
@@ -23,7 +23,7 @@ describe('Sistema E-commerce - Fluxos Críticos', () => {
     cy.contains('As senhas não coincidem').should('be.visible');
   });
 
-  it('CT-03: Bloqueio de Email Duplicado', () => {
+  it('Bloqueio de Email Duplicado', () => {
     cy.window().then((win) => {
       const users = [{ email: 'existente@teste.com', password: '123' }];
       win.localStorage.setItem('users', JSON.stringify(users));
@@ -36,7 +36,7 @@ describe('Sistema E-commerce - Fluxos Críticos', () => {
     cy.contains('Este email já está cadastrado').should('be.visible');
   });
 
-  it('CT-04: Login com Credenciais Inválidas', () => {
+  it('Login com Credenciais Inválidas', () => {
     cy.visit(`${BASE_URL}/login`);
     cy.get('#username').type('naoexiste@teste.com'); 
     cy.get('#password').type('123456');
@@ -44,7 +44,7 @@ describe('Sistema E-commerce - Fluxos Críticos', () => {
     cy.contains('Email ou senha incorretos').should('be.visible');
   });
 
-  it('CT-05: Fluxo de Carrinho e Compra (Escopo Completo)', () => {
+  it('Fluxo de Carrinho e Compra (Escopo Completo)', () => {
     cy.window().then((win) => {
       const users = [{ email: 'cliente@teste.com', password: '123' }];
       win.localStorage.setItem('users', JSON.stringify(users));
@@ -80,7 +80,7 @@ describe('Sistema E-commerce - Fluxos Críticos', () => {
     cy.contains('Seu carrinho está vazio').should('be.visible');
   });
 
-  it('CT-06: Funcionalidade de Busca de Produtos', () => {
+  it('Funcionalidade de Busca de Produtos', () => {
     cy.window().then((win) => {
       win.localStorage.setItem('isLoggedIn', 'true');
     });
@@ -93,7 +93,7 @@ describe('Sistema E-commerce - Fluxos Críticos', () => {
     cy.contains('Laptop Ultra').should('not.exist');
   });
 
-  it('CT-07: Persistência do Carrinho ao Recarregar Página', () => {
+  it('Persistência do Carrinho ao Recarregar Página', () => {
     cy.window().then((win) => {
       win.localStorage.setItem('isLoggedIn', 'true');
     });
@@ -105,5 +105,26 @@ describe('Sistema E-commerce - Fluxos Críticos', () => {
     cy.reload();
 
     cy.get('#cart-count').should('contain', '1');
+  });
+
+  it('Validação de Limite de Itens no Carrinho (>99)', () => {
+    cy.window().then((win) => {
+      win.localStorage.setItem('isLoggedIn', 'true');
+    });
+    cy.visit(BASE_URL);
+
+    Cypress._.times(99, () => {
+        cy.get('main button').first().click();
+    });
+
+    cy.get('#cart-count').should('contain', '99');
+
+    cy.get('main button').first().click();
+
+    cy.contains('Opa, vai com calma!').should('be.visible');
+    
+    cy.contains('button', 'Entendi').click();
+
+    cy.get('#cart-count').should('contain', '99');
   });
 });
